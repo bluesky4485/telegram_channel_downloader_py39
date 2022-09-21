@@ -10,21 +10,21 @@ from telethon import TelegramClient, events, errors
 from telethon.tl.types import MessageMediaWebPage
 
 #***********************************************************************************#
-api_id = 1234567   # your telegram api id
-api_hash = '1234567890abcdefgh'  # your telegram api hash
-bot_token = '1234567890:ABCDEFGHIJKLMNOPQRST'  # your bot_token
-admin_id = 1234567890  # your chat id
+api_id = 123131   # your telegram api id
+api_hash = '123144'  # your telegram api hash
+bot_token = '233:31313131'  # your bot_token
+admin_id = 31313  # your chat id
 save_path = '/usr/downloads'  # file save path
 upload_file_set = True  # set upload file to google drive
-drive_id = '5FyJClXmsqNw0-Rz19'  # google teamdrive id
-drive_name = 'gc'  # rclone drive name
+drive_id = '31313'  # google teamdrive id
+drive_name = 'gd'  # rclone drive name
 max_num = 5  # 同时下载数量
 # filter file name/文件名过滤
 filter_list = ['你好，欢迎加入 Quantumu', '\n']
 # filter chat id /过滤某些频道不下载
 blacklist = [1388464914,]
 donwload_all_chat = False # 监控所有你加入的频道，收到的新消息如果包含媒体都会下载，默认关闭
-filter_file_name = ['jpg', ]
+filter_file_name = [ ]
 #***********************************************************************************#
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -39,6 +39,12 @@ def validateTitle(title):
     new_title = re.sub(r_str, "_", title)  # 替换为下划线
     return new_title
 
+def shorten_filename(filename, limit=30):
+    """返回合适长度文件名，中间用...显示"""
+    if len(filename) <= limit:
+        return filename
+    else:
+        return filename[:int(limit / 2) - 3] + '...' + filename[len(filename) - int(limit / 2):]
 
 # 获取相册标题
 async def get_group_caption(message):
@@ -84,6 +90,7 @@ async def worker(name):
         for filter_file in filter_file_name:
             if file_name.endswith(filter_file):
                 return
+        file_name = shorten_filename(file_name)
         dirname = validateTitle(f'{chat_title}({entity.id})')
         datetime_dir_name = message.date.strftime("%Y年%m月")
         file_save_path = os.path.join(save_path, dirname, datetime_dir_name)
@@ -99,11 +106,11 @@ async def worker(name):
                 message, os.path.join(file_save_path, file_name)))
             await asyncio.wait_for(task, timeout=3600)
             if upload_file_set:
-                proc = await asyncio.create_subprocess_exec('fclone',
+                proc = await asyncio.create_subprocess_exec('rclone',
                                                             'move',
                                                             os.path.join(
                                                                 file_save_path, file_name),
-                                                            f"{drive_name}:{{{drive_id}}}/{dirname}/{datetime_dir_name}",
+                                                            f"{drive_name}:{dirname}/{datetime_dir_name}",
                                                             '--ignore-existing',
                                                             stdout=asyncio.subprocess.DEVNULL)
                 await proc.wait()
